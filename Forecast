@@ -1,0 +1,29 @@
+Forecast <- function() {
+setwd("D://P//General//Analytics Coursera//Kaggle//Rossmann Store Sales//WD")
+data <- read.table('train.csv', sep=',', header=T)
+Week <- ""
+
+for(i in 1:nrow(data)){
+  date <- data$Date
+  Week[i]<- strftime(date[i], format = "%y%W")
+}
+y <- cbind(data,Week)
+##return(y)
+write.csv(y,file="Details.csv",row.names=FALSE) ## Write Results
+
+}
+
+Forecast1 <- function()
+{
+for(i in 1:nrow(data)){
+  date <- data$Date
+  Week[i]<- strftime(date[i], format = "%y%W")
+}
+
+
+}
+
+#identify if there is a trend YoY - can we forecast YoY trend ?
+# find the weekly spread. project YoY uplift and spread across the week for 6 weeks?
+#can we model time series and predict for next 6 weeks? (may not be pobble)
+# make stores clsuters according to promo months  store type
