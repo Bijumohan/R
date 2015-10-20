@@ -1,0 +1,77 @@
+setwd("D://P//General//Analytics Coursera//Kaggle//Rossmann Store Sales//WD")
+
+
+data <- read.table('train.csv', sep=',', header=T)
+head(data,2)
+
+## convert to POSIXlt
+x<- strptime(date[1], format = "%Y-%m-%d")
+weekdays(x)
+strftime(x,format="%W")
+
+x<- strptime(date[236000], format = "%Y-%m-%d")
+weekdays(x)
+strftime(x,format="%W%y")
+
+x<- strftime(date[236000], format = "%W%y")
+
+nrow(data)
+
+x.2_day<- strftime(x.2$Date[1], format = "%y%W")
+
+
+
+x<- cbind(names,content)
+x <- data.frame(Key=c(1,1,2,2,3,3,4,4),Count=c(12,22,32,33,24,11,54,33))
+tapply(x$Count,x$Key,sum,simplify=TRUE)
+table(x)
+
+data <- read.table('Details.csv', sep=',', header=T)
+
+x.1 <- subset(data,(Store==1 & Open==1))
+x.1_Sum <- aggregate(x.1$Sales,by=list(x.1$Store,x.1$Week),FUN=sum)
+library(ggplot2)
+
+plot(x ~ Group.2, data=x.1_Sum)
+xyplot(x ~ Group.2, data=x.1_Sum)
+
+FY <- substr(x.1_Sum$Group.2,1,2)
+WK <- substr(x.1_Sum$Group.2,3,4)
+x.1_Sum_Ext <- cbind(x.1_Sum,FY,WK)
+plot(x ~ WK|FY, data=x.1_Sum_Ext)
+
+library(lattice)
+xyplot(Sales ~ DayOfWeek,y)
+xyplot(DayOfWeek ~ Sales,y)
+
+x.1 <- subset(data,Store <15 )
+
+write.csv(x.1,file="Train_Subset_SLT15.csv",row.names=FALSE) ## Write Results
+
+############################################################################SUBSET OF 15 STORES##############################
+setwd("D://P//General//Analytics Coursera//Kaggle//Rossmann Store Sales//WD")
+x.1 <- read.table('Train_Subset_SLT15.csv', sep=',', header=T)
+pairs(x.1)
+
+plot(
+
+dim(x.1)
+names(x.1)
+plot(x.1$DayOfWeek,x.1$Sales,type='l',xlab="DOW",ylab="Sales")
+babies <- present$girls + present$boys
+plot(present$year,babies,type='l')
+
+
+fit1<- lm(Sales~DayOfWeek+Open+Promo,x.1)
+summary(fit1)
+
+strftime(x.1$Date[1], format = "%y")
+tail(subset(x.1,strftime(x.1$Date, format = "%y") == 15))
+
+fit1<- lm(Sales~DayOfWeek+Open+Promo,subset(x.1,strftime(x.1$Date, format = "%y") == 14))
+summary(fit1)
+
+store <- read.table('store.csv', sep=',', header=T)
+x.2<- merge(x.1,store,by="Store")
+fit1<- lm(Sales~DayOfWeek+Promo+StoreType,subset(x.1,strftime(x.1$Date, format = "%y") == 14 & Open == 1))
+table(store$StoreType)
