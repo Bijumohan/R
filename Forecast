@@ -1,13 +1,99 @@
-Forecast <- function() {
-setwd("D://P//General//Analytics Coursera//Kaggle//Rossmann Store Sales//WD")
-data <- read.table('train.csv', sep=',', header=T)
-Week <- ""
+Forecast <- function() 
+{
+setwd("D://P//Analytics//Kaggle//Rossmann Store Sales//WD")
 
-for(i in 1:nrow(data)){
+Data_0 <- (read.table('train.csv', sep=',', header=T))
+Data_1 <- subset(Data_0,Data_0$Open == 1) 
+
+
+store_01 <- read.table('store.csv', sep=',', header=T)
+store <- cbind(store_01,Cluster=paste(store_01$StoreType,store_01$Assortment,sep=""))
+
+
+data <- merge(Data_1,store,by="Store")
+Week <- ""
+Week_1 <- ""
+Year<- ""
+Month <- ""
+Promo2X <- ""
+Month_Dig <- "" 
+numeric_1 <- ""
+numeric_2 <- ""
+numeric_3 <- ""
+numeric_4 <- ""
+Promo2SinceWeek_01 <- ""
+CompOpenMonth <- ""
+for(i in 1:nrow(data))
+{
   date <- data$Date
-  Week[i]<- strftime(date[i], format = "%y%W")
+  #Week[i]<- strftime(date[i], format = "%y%W")
+  Week[i]<- strftime(date[i], format = "%W")
+  Year[i]<- strftime(date[i], format = "%Y")
+  Month[i] <- strftime(date[i], format = "%b")
+  Month_Dig[i] <- strftime(date[i], format = "%m")
+  Promo2X[i] = 0
+  Week[i] <-  as.numeric(Week[i])+1
+  numeric_4[i] <- ""
+  numeric_3[i] <- ""
+  Promo2SinceWeek_01[i] <- ""
+  CompOpenMonth[i] <- ""
+  
+  if (!is.na(data$CompetitionOpenSinceYear[i]) & !is.na(data$CompetitionOpenSinceMonth[i]))
+  {
+    CompOpenMonth[i] <- data$CompetitionOpenSinceMonth[i]
+    if (as.numeric(data$CompetitionOpenSinceMonth[i]) < 10) 
+    {
+     CompOpenMonth[i] <- paste(c('0'),data$CompetitionOpenSinceMonth[i],sep="")
+    }
+    
+    numeric_1[i] <- as.numeric(paste(data$CompetitionOpenSinceYear[i],as.character(CompOpenMonth[i]),sep="")) 
+    numeric_2[i] <- as.numeric(paste(Year[i],as.character(Month_Dig[i]),sep=""))
+    
+    if (numeric_1[i] >= numeric_2[i]) 
+    {
+      data$CompetitionDistance[i] <- 1000000
+    }
+    
+  }
+  
+  
+  if (data$Promo2[i] == 1 )
+  {
+    Promo2SinceWeek_01[i] <- data$Promo2SinceWeek[i]
+    if (as.numeric(data$Promo2SinceWeek[i]) < 10) 
+    {
+    (Promo2SinceWeek_01[i] <- paste(c('0'),data$Promo2SinceWeek[i],sep=""))
+    } 
+    
+    Week_1[i]<- Week[i]
+    
+    if (as.numeric(Week[i]) < 10) 
+    {
+      Week_1[i]<- paste(c('0'),Week[i],sep="")
+     
+    }
+    
+    numeric_3[i] <- as.numeric(paste(data$Promo2SinceYear[i],as.character(Promo2SinceWeek_01[i]),sep=""))
+    numeric_4[i] <- as.numeric(paste(Year[i],as.character(Week_1[i]),sep=""))
+    if (numeric_3[i] <= numeric_4[i] )
+  
+    {
+      s <- strsplit(as.character(data$PromoInterval[i]),',')
+      if (is.na(as.logical(mapply(grep,Month[i],s))) == "FALSE")
+      {  
+         Promo2X[i] = 1  
+      }
+    
+    }
+  }
 }
-y <- cbind(data,Week)
+y <- cbind(data,Week,Year,Month,Promo2X )
+
+##massaging Store data
+
+
+
+
 ##return(y)
 write.csv(y,file="Details.csv",row.names=FALSE) ## Write Results
 
@@ -23,6 +109,62 @@ for(i in 1:nrow(data)){
 
 }
 
+Predict<- function() {
+
+##x.1 <- read.table('Train_Subset_2014.csv', sep=',', header=T)
+x.1 <- read.table('Details.csv', sep=',', header=T)
+WeekofYear<- ""
+#for (i in 1:nrow(x.1)){WeekofYear[i] = substr(x.1$Week[i],3,4)}
+#x.2 <- cbind(x.1,WeekofYear)
+x.2 <- x.1
+
+store <- read.table('store.csv', sep=',', header=T)
+x.3<- merge(x.2,store,by="Store")
+
+#y.1 <- subset(data,strftime(data$Date, format = "%Y") == 2015)
+y.1 <- read.table('test.csv', sep=',', header=T)
+x<- is.na(y.1$Open)
+y.1$Open[x] <- 1
+store <- read.table('store.csv', sep=',', header=T)
+x <- ""
+x<- is.na(store$CompetitionDistance)
+store$CompetitionDistance[x] <- 1000000
+
+y.3<- merge(y.1,store,by="Store")
+
+
+## Model
+#fit1<- lm(Sales~Promo+factor(DayOfWeek)+factor(WeekofYear)+StoreType+log(CompetitionDistance+1)+StateHoliday+factor(SchoolHoliday),subset(x.3,Open == 1))
+#1
+#fit1<- lm(Sales~Promo+factor(DayOfWeek)+StoreType+log(CompetitionDistance+1)+StateHoliday+factor(SchoolHoliday),subset(x.3,Open == 1))
+#2
+#fit1<- lm(Sales~Promo+factor(DayOfWeek)+StoreType+log(CompetitionDistance+1)+factor(SchoolHoliday),subset(x.3,Open == 1))
+
+#3
+fit1<- lm(Sales~Promo+factor(DayOfWeek)+StoreType+log(CompetitionDistance+1)+factor(SchoolHoliday)+Assortment,subset(x.3,Open == 1))
+
+#4
+fit1<- lm(Sales~Promo+factor(DayOfWeek)+Promo2+log(CompetitionDistance+1)+factor(SchoolHoliday)+Cluster,subset(x.1,Month == "Aug"|Month == "Sep"|Month == "Jun"))
+
+##Prediction
+Sales.Predict =predict(fit1,y.3)
+
+M<- matrix(Sales.Predict,ncol=1)
+y.4 <- cbind(y.3,M)
+M_1 <- y.4$M * y.4$Open
+Sales.Predicted <- matrix(M_1,ncol=1)
+#id <- ""
+#for (i in 1:nrow(Sales.Predicted)){id[i] = i}
+#M_id <- matrix(id,ncol=1)
+
+Output_for_Kaggle <- cbind(y.4$Id ,Sales.Predicted)
+
+df_Op <- as.data.frame(Output_for_Kaggle)
+z <- c("Id","Sales")
+names(df_Op) <- z
+
+write.csv(df_Op,file="Output#1.csv",row.names=FALSE) ## Write Results
+}
 #identify if there is a trend YoY - can we forecast YoY trend ?
 # find the weekly spread. project YoY uplift and spread across the week for 6 weeks?
 #can we model time series and predict for next 6 weeks? (may not be pobble)
