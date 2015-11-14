@@ -1,4 +1,4 @@
-setwd("D://P//General//Analytics Coursera//Kaggle//Rossmann Store Sales//WD")
+setwd("D://P//Analytics//Kaggle//Rossmann Store Sales//WD")
 
 
 data <- read.table('train.csv', sep=',', header=T)
@@ -49,7 +49,7 @@ x.1 <- subset(data,Store <15 )
 write.csv(x.1,file="Train_Subset_SLT15.csv",row.names=FALSE) ## Write Results
 
 ############################################################################SUBSET OF 15 STORES##############################
-setwd("D://P//General//Analytics Coursera//Kaggle//Rossmann Store Sales//WD")
+setwd("D://P//Analytics//Kaggle//Rossmann Store Sales//WD")
 x.1 <- read.table('Train_Subset_SLT15.csv', sep=',', header=T)
 pairs(x.1)
 
@@ -75,3 +75,192 @@ store <- read.table('store.csv', sep=',', header=T)
 x.2<- merge(x.1,store,by="Store")
 fit1<- lm(Sales~DayOfWeek+Promo+StoreType,subset(x.1,strftime(x.1$Date, format = "%y") == 14 & Open == 1))
 table(store$StoreType)
+
+######################################################################################################################################
+setwd("D://P//Analytics//Kaggle//Rossmann Store Sales//WD")
+
+x.1 <- subset(data,Store < 500 & strftime(data$Date, format = "%Y") == 2014)
+write.csv(x.1,file="Train_Subset_2014.csv",row.names=FALSE) ## Write Results
+
+
+x.1 <- read.table('Train_Subset_2014.csv', sep=',', header=T)
+WeekofYear<- ""
+for (i in 1:nrow(x.1)){WeekofYear[i] = substr(x.1$Week[i],3,4)}
+x.2 <- cbind(x.1,WeekofYear)
+
+store <- read.table('store.csv', sep=',', header=T)
+x.3<- merge(x.2,store,by="Store")
+fit1<- lm(Sales~DayOfWeek+Promo +WeekofYear+StoreType+Assortment+CompetitionDistance,subset(x.3,Open == 1))
+summary(fit1)
+
+y.1 <- subset(data,strftime(data$Date, format = "%Y") == 2015)
+store <- read.table('store.csv', sep=',', header=T)
+y.3<- merge(x.2,store,by="Store")
+
+
+fit1<- lm(Sales~Promo+factor(DayOfWeek)+StoreType+log(CompetitionDistance+1)+StateHoliday+factor(SchoolHoliday),subset(x.3,Open == 1))
+
+fit1<- lm(Sales~Promo+factor(DayOfWeek)+factor(WeekofYear)+StoreType+log(CompetitionDistance+1)+StateHoliday+factor(SchoolHoliday),subset(x.3,Open == 1))
+Sales.Predict =predict(fit1,y.3)
+M<- matrix(Sales.Predict,ncol=1)
+y.4 <- cbind(y.3,M)
+
+head(subset(y.1,!is.na(y.1$Open & y.1$Store == 622)))
+x<- is.na(y.1$Open)
+y.1[x,]
+y.1$Open[x,] <- 1
+
+y.1[c("Id","Open")]
+
+
+promo2_months <- names(table(store$PromoInterval))
+s <- strsplit(as.character(names(table(store_1$PromoInterval))),',')
+is.na(as.logical(mapply(grep,y$Month[2],s)))
+
+
+promo2_months <- names(table(store$PromoInterval))
+s <- strsplit(as.character(names(table(store_1$PromoInterval))),',')
+s <- strsplit(as.character(store_1$PromoInterval[2]),',')
+
+
+Data_0 <- tail(read.table('train.csv', sep=',', header=T,nrows=1000,skip=00000))
+
+
+Week[i]<- strftime(as.Date(date[i])+7, format = "%W") 
+
+
+How to find out the error rate:
+________________________________________
+
+pairs(x.1)
+
+
+
+library(randomForest)
+setwd("D://P//Analytics//Kaggle//Rossmann Store Sales//WD")
+
+lm1<- lm(eruptions~waiting,data=trainFaith)
+
+plot(trainFaith$waiting,trainFaith$eruptions,pch=19,col="blue",xlab="waiting",ylab="eruptions")
+lines(trainFaith$waiting,lm1$fitted,lwd=3)
+
+RMSE:sqrt(sum((lm1$fitted-trainFaith$eruptions)^2))
+
+forestx.1<- randomForest(x.1$Sales ~ x.1$Promo + factor(x.1$DayOfWeek)+x.1$Promo2+log(x.1$CompetitionDistance+1)+factor(x.1$SchoolHoliday)+x.1$Cluster,data=x.1,prox=TRUE,ntree=50,na.action=na.omit)
+
+x.1_S01 <- subset(x.1,strftime(x.1$Date, format = "%Y") == 2014 & x.1$Store < 15)
+
+
+x.1 <- read.table('Details.csv', sep=',', header=T)
+x.1_S01 <- subset(x.1,x.1$Year == 2014 & x.1$Store < 300)
+x.1_S02 <- subset(x.1_S01,x.1_S01$Month == "Aug"|x.1_S01$Month == "Sep")
+
+x.1_Smp <- x.1_S02
+nrow(x.1_Smp)
+forestx.1<- randomForest(x.1_Smp$Sales ~ x.1_Smp$Cluster + factor(x.1_Smp$DayOfWeek)+x.1_Smp$Promo +x.1_Smp$Promo2+log(x.1_Smp$CompetitionDistance+1)+factor(x.1_Smp$SchoolHoliday),data=x.1_Smp,prox=TRUE,ntree=100,na.action=na.omit,mtry=5,do.trace=TRUE)
+
+forestx.1
+
+x.1_S01 <- subset(x.1,x.1$Year == 2014 & x.1$Store > 299 & x.1$Store < 600)
+x.1_S02 <- subset(x.1_S01,x.1_S01$Month == "Aug"|x.1_S01$Month == "Sep")
+
+x.1_Smp <- x.1_S02
+nrow(x.1_Smp)
+forestx.2<- randomForest(x.1_Smp$Sales ~ x.1_Smp$Cluster + factor(x.1_Smp$DayOfWeek)+x.1_Smp$Promo +x.1_Smp$Promo2+log(x.1_Smp$CompetitionDistance+1)+factor(x.1_Smp$SchoolHoliday),data=x.1_Smp,prox=TRUE,ntree=100,na.action=na.omit)
+
+forestx.2
+
+
+x.1_S01 <- subset(x.1,x.1$Year == 2014 & x.1$Store > 599 & x.1$Store < 900)
+x.1_S02 <- subset(x.1_S01,x.1_S01$Month == "Aug"|x.1_S01$Month == "Sep")
+
+x.1_Smp <- x.1_S02
+nrow(x.1_Smp)
+forestx.2<- randomForest(x.1_Smp$Sales ~ x.1_Smp$Cluster + factor(x.1_Smp$DayOfWeek)+x.1_Smp$Promo +x.1_Smp$Promo2+log(x.1_Smp$CompetitionDistance+1)+factor(x.1_Smp$SchoolHoliday),data=x.1_Smp,prox=TRUE,ntree=100,na.action=na.omit)
+
+
+
+x.1_S01 <- subset(x.1,x.1$Year == 2014 & x.1$Store > 899 & x.1$Store < 1200)
+x.1_S02 <- subset(x.1_S01,x.1_S01$Month == "Aug"|x.1_S01$Month == "Sep")
+
+x.1_Smp <- x.1_S02
+nrow(x.1_Smp)
+forestx.3<- randomForest(x.1_Smp$Sales ~ x.1_Smp$Cluster + factor(x.1_Smp$DayOfWeek)+x.1_Smp$Promo +x.1_Smp$Promo2+log(x.1_Smp$CompetitionDistance+1)+factor(x.1_Smp$SchoolHoliday),data=x.1_Smp,prox=TRUE,ntree=100,na.action=na.omit)
+
+forestx.Comb <- combine(forestx.1,forestx.2,forestx.3)
+
+Sales.Predict <- (predict(forestx.1,data=y.3)/3 + predict(forestx.2,data=y.3)/3 + predict(forestx.3,data=y.3)/3 )
+
+
+Sales.Predict = predict(forestx.1,data=y.3)
+
+
+x.1_S01 <- subset(x.1,x.1$Year == 2014 & x.1$Store > 299 & x.1$Store < 500)
+x.1_S02 <- subset(x.1_S01,x.1_S01$Month == "Aug"|x.1_S01$Month == "Sep")
+x.1_S01 <- ""
+gc()
+x.1_Smp <- x.1_S02
+x.1_S02 <- ""
+gc()
+
+
+
+library(randomForest)
+setwd("D://P//Analytics//Kaggle//Rossmann Store Sales//WD")
+
+
+forestx.3<- randomForest(x.1_Smp$Sales ~ x.1_Smp$Cluster + factor(x.1_Smp$DayOfWeek)+x.1_Smp$Promo +x.1_Smp$Promo2+log(x.1_Smp$CompetitionDistance+1)+factor(x.1_Smp$SchoolHoliday),data=x.1_Smp,prox=TRUE,ntree=100,mtry=3,importance=TRUE,na.action=na.omit)
+
+ozone.rf <- randomForest(Ozone ~ ., data=airquality, mtry=3,importance=TRUE, na.action=na.omit)
+
+
+
+forestx.3<- randomForest(x.1_Smp$Sales ~ x.1_Smp$Cluster + factor(x.1_Smp$DayOfWeek)+x.1_Smp$Promo +x.1_Smp$Promo2,data=x.1_Smp,prox=TRUE,ntree=100,mtry=3,importance=TRUE,na.action=na.omit)
+
+
+forestx.1<- randomForest(x.1_Smp$Sales ~ x= x.1_Smp$Cluster + factor(x.1_Smp$DayOfWeek)+x.1_Smp$Promo +x.1_Smp$Promo2+log(x.1_Smp$CompetitionDistance+1)+factor(x.1_Smp$SchoolHoliday),data=x.1_Smp,prox=TRUE,ntree=100,na.action=na.omit,mtry=5,do.trace=TRUE)
+
+x.Data <- cbind(x.1_Smp$Sales,x.1_Smp$Cluster , factor(x.1_Smp$DayOfWeek),x.1_Smp$Promo ,x.1_Smp$Promo2,log(x.1_Smp$CompetitionDistance+1),factor(x.1_Smp$SchoolHoliday))
+colNot<- !is.na(x.Data) 
+
+x.Data1 <- x.Data[colNot]
+forestx.1<- randomForest(x=x.Data1[,2:6],y=x.Data1[,1] ,data=x.1_Smp,prox=TRUE,ntree=100,na.action=na.omit,mtry=5,do.trace=TRUE)
+
+
+forestx.1<- randomForest(x=x.1_Smp[,feature.names],y=x.Data1[,1] ,data=x.1_Smp,prox=TRUE,ntree=100,na.action=na.omit,mtry=5,do.trace=TRUE)
+
+feature.names <- names(x.1_Smp)[c(1,2,6,8:12,14:19)]
+feature.names <- names(x.1_Smp)[c(2,7,12,19,23)]
+
+
+
+for (f in feature.names) {
+  if (class(train[[f]])=="character") {
+    levels <- unique(c(train[[f]], test[[f]]))
+    train[[f]] <- as.integer(factor(train[[f]], levels=levels))
+    test[[f]]  <- as.integer(factor(test[[f]],  levels=levels))
+  }
+}
+
+levels <- unique(c(x.1_Smp[["Cluster"]]))
+x.1_Smp[["Cluster"]] <- as.integer(factor(x.1_Smp[["Cluster"]],levels=levels))
+
+
+forestx.1<- randomForest(x.1_Smp[,feature.names],x.1_Smp$Sales,mtry=5,ntree=100,do.trace=TRUE)
+
+http://stackoverflow.com/questions/4862178/remove-rows-with-nas-in-data-frame
+
+
+checking for Outliers:
+----------------------------
+
+Create frquency tables
+
+x <- sample(10:20, 44, TRUE)
+#Your code
+factorx <- factor(cut(x, breaks=nclass.Sturges(x)))
+#Tabulate and turn into data.frame
+xout <- as.data.frame(table(factorx))
+#Add cumFreq and proportions
+xout <- transform(xout, cumFreq = cumsum(Freq), relative = prop.table(Freq))
+#-----
