@@ -1,0 +1,497 @@
+setwd("D://P//Analytics//Kaggle//Telstra Recruiting Network Disruptions//WD")
+
+setwd("D://P//Analytics//Kaggle//Telstra Recruiting Network Disruptions//WD//event_type.csv")
+
+data <- read.table('train.csv', sep=',', header=T)
+LF<- read.table('log_feature.csv', sep=',', header=T)
+RT<- read.table('resource_type.csv', sep=',', header=T)
+ET<- read.table('event_type.csv', sep=',', header=T)
+ST<- read.table('severity_type.csv', sep=',', header=T)
+
+****to find unique values
+x[!duplicated(x)] 
+
+
+
+
+
+table(ST$severity_type)
+
+
+> anyDuplicated(ST$id)
+[1] 0
+> anyDuplicated(LF$id)
+[1] 5
+> anyDuplicated(RT$id)
+[1] 26
+> anyDuplicated(ET$id)
+[1] 5
+> anyDuplicated(data$id)
+[1] 0
+> anyDuplicated(data_1$id)
+[1] 0
+
+
+> samp
+      id log_feature volume
+1   6597  feature 68      6
+2   8011  feature 68      7
+3   2597  feature 68      1
+4   5022 feature 172      2
+5   5022  feature 56      1
+6   5022 feature 193      4
+7   5022  feature 71      3
+8   6852 feature 201      2
+9   6852  feature 56      1
+10  6852  feature 80      2
+11  5611  feature 80      2
+12 14838 feature 203      5
+13 14838  feature 82      8
+14 14838  feature 80      9
+15  2588  feature 82      9
+16  2588 feature 201      5
+17  2588  feature 80     15
+18  2588 feature 203      5
+19  4848  feature 56      3
+20  4848  feature 80     16
+> samp_1 <- reshape(samp,timevar="log_feature",idvar="id",direction="wide")
+> samp_1
+      id volume.feature 68 volume.feature 172 volume.feature 56 volume.feature 193 volume.feature 71 volume.feature 201 volume.feature 80 volume.feature 203 volume.feature 82
+1   6597                 6                 NA                NA                 NA                NA                 NA                NA                 NA                NA
+2   8011                 7                 NA                NA                 NA                NA                 NA                NA                 NA                NA
+3   2597                 1                 NA                NA                 NA                NA                 NA                NA                 NA                NA
+4   5022                NA                  2                 1                  4                 3                 NA                NA                 NA                NA
+
+
+###data manipulation
+###############################################################################################################################
+
+
+setwd("D://P//Analytics//Kaggle//Telstra Recruiting Network Disruptions//WD")
+data <- read.table('train.csv', sep=',', header=T)
+LF<- read.table('log_feature.csv', sep=',', header=T)
+RT<- read.table('resource_type.csv', sep=',', header=T)
+ET<- read.table('event_type.csv', sep=',', header=T)
+ST<- read.table('severity_type.csv', sep=',', header=T)
+
+
+data <- read.table('train.csv', sep=',', header=T)
+ST<- read.table('severity_type.csv', sep=',', header=T)
+data_1 <- merge(data,ST,by="id")
+
+samp_1 <- reshape(LF,timevar="log_feature",idvar="id",direction="wide")
+data_2 <- merge(data_1,samp_1,by="id")
+
+
+na_count <-sapply(data_2, function(y) sum(length(which(!is.na(y)))))
+l <- na_count[] > 1500
+names(na_count[l])
+head(data_2[names(na_count[l])])
+
+data_3 <- data_2[names(na_count[l])]
+table(data_3$fault_severity,data_3$severity_type)
+
+##M_01 <- glm(data_3$fault_severity ~ data_3$severity_type)
+
+
+library(Amelia)
+missmap(data_3, main = "Missing values vs observed")
+
+mean(data_3[,5],na.rm=TRUE)
+median(data_3[,5],na.rm=TRUE)
+plot(data_3[,5])
+
+
+
+
+ plot(data_3[,5],data_3[,6],pch=19,col=as.factor(data_3$fault_severity))
+ legend(1.75,4.5,legend=unique(as.factor(data_3$fault_severity)),col=unique(as.factor(data_3$fault_severity)),pch=19)
+ plot(data_3$severity_type,pch=19,col=as.factor(data_3$fault_severity))
+ legend(5.75,4.5,legend=unique(as.factor(data_3$fault_severity)),col=unique(as.factor(data_3$fault_severity)),pch=19)
+
+test <- data_3[1:7000,]
+ train <- data_3[1:7000,]
+ test <- data_3[7001:7381,]
+ tree1 <- tree(fault_severity~ severity_type,data=train)
+ summary(tree1)
+
+
+ tree1 <- tree(as.factor(fault_severity) ~ severity_type,data=train)
+ summary(tree1)
+tree1 <- tree(as.factor(fault_severity) ~ as.numeric(severity_type) + train[,5] ,data=train)
+ summary(tree1)
+
+
+ pred1 <- predict(tree1,test,type="class")
+Error in model.frame.default(Terms, newdata, na.action = na.pass, xlev = object$xlevels) : 
+  variable lengths differ (found for 'train[, 5]')
+In addition: Warning message:
+'newdata' had 381 rows but variables found have 7000 rows 
+
+
+x<- names(data_3)
+
+x[5] <- sub(" ","_",x[5])
+x[6] <- sub(" ","_",x[6])
+
+d <- sapply(x,function(y) sub(" ","_",y))
+names(data_3)
+
+na_c <- sapply(subset(data_3[!is.na(data_3$volume.feature_312),]),function(x) sum((length(which(!is.na(x))))))
+
+data_4 <- subset(data_3[!is.na(data_3$volume.feature_312),])
+data_4$volume.feature_232[is.na(data_4$volume.feature_232)]<-  median(data_4$volume.feature_232,na.rm=TRUE)
+
+
+
+
+test <- data_3[7301:7381,]
+
+data_4 <- 
+
+tree1 <- tree(as.factor(fault_severity) ~ as.numeric(severity_type) + volume.feature_312 + volume.feature_232 ,data=data_4)
+
+
+data_4_01 <- subset(data_4,data_4$fault_severity==1)
+data_4_00 <- subset(data_4,data_4$fault_severity==0)[1:350,]
+nrow(data_4_00)
+[1] 350
+data_05 <- rbind(data_4_00,data_4_01)
+
+
+tree1 <- tree(as.factor(fault_severity) ~ as.numeric(severity_type) + volume.feature_312 + volume.feature_232 ,data=data_05)
+
+table(as.factor(data_05$fault_severity,tree1)
+
+
+na_c <- sapply(subset(data_3[!is.na(data_3$volume.feature_312) | !is.na(data_3$volume.feature_232),]),function(x) sum((length(which(!is.na(x))))))
+
+data_4 <- subset(data_3[!is.na(data_3$volume.feature_312)| !is.na(data_3$volume.feature_232),])
+data_4 <- data_3[!is.na(data_3$volume.feature_312)| !is.na(data_3$volume.feature_232),]
+
+data_4$volume.feature_232[is.na(data_4$volume.feature_232)]<-  median(data_4$volume.feature_232,na.rm=TRUE)
+data_4$volume.feature_232[is.na(data_4$volume.feature_312)]<-  median(data_4$volume.feature_312,na.rm=TRUE)
+
+##################################################################################################
+## trying to include some samples with fault_severity type = 2
+##################################################################################################
+na_count <- sapply(data_2, function(y) sum(length(which(!is.na(y)))))
+
+l <- na_count[] > 900
+names(na_count[l])
+head(data_2[names(na_count[l])])
+
+data_06 <- data_2[names(na_count[l])]
+
+
+
+
+x<- names(data_06)
+d <- sapply(x,function(y) sub(" ","_",y))
+
+names(data_06) <- d
+na_c <- sapply(subset(data_06[!is.na(data_06$volume.feature_312) | !is.na(data_06$volume.feature_232) | !is.na(data_06$volume.feature_203) | !is.na(data_06$volume.feature_82) | !is.na(data_06$volume.feature_313) | !is.na(data_06$volume.feature_233) ,]),function(x) sum((length(which(!is.na(x))))))
+
+data_07 <- data_06[!is.na(data_06$volume.feature_312) | !is.na(data_06$volume.feature_232) | !is.na(data_06$volume.feature_203) | !is.na(data_06$volume.feature_82) | !is.na(data_06$volume.feature_313) | !is.na(data_06$volume.feature_233) ,]
+
+#for (i in 5:10) {
+#data_07[is.na(data_07[,i]),i] <- median(data_07[,i],na.rm=TRUE)
+#}
+
+
+
+data_07_00 <- subset(data_07,data_07$fault_severity==0)
+data_07_01 <- subset(data_07,data_07$fault_severity==1)
+data_07_02 <- subset(data_07,data_07$fault_severity==2)
+
+for (i in 5:10) {
+data_07_00[is.na(data_07_00[,i]),i] <- mean(data_07_00[,i],na.rm=TRUE)
+data_07_01[is.na(data_07_01[,i]),i] <- mean(data_07_01[,i],na.rm=TRUE)
+data_07_02[is.na(data_07_02[,i]),i] <- mean(data_07_02[,i],na.rm=TRUE)
+
+data_07_00[is.nan(data_07_00[,i]),i] <- mean(data_07[,i],na.rm=TRUE)
+data_07_01[is.nan(data_07_01[,i]),i] <- mean(data_07[,i],na.rm=TRUE)
+data_07_02[is.nan(data_07_02[,i]),i] <- mean(data_07[,i],na.rm=TRUE)
+
+}
+
+data_07 <- rbind(data_07_00,data_07_01,data_07_02)
+
+
+na_c <- sapply(subset(data_07[!is.na(data_07$volume.feature_312) | !is.na(data_07$volume.feature_232) | !is.na(data_07$volume.feature_203) | !is.na(data_07$volume.feature_82) | !is.na(data_07$volume.feature_313) | !is.na(data_07$volume.feature_233) ,]),function(x) sum((length(which(!is.na(x))))))
+table(data_07$fault_severity)
+
+data_07_01 <- subset(data_07,data_07$fault_severity > 0)
+data_07_00 <- subset(data_07,data_07$fault_severity==0)[500:1550,]
+data_08 <- rbind(data_07_01,data_07_00)
+
+
+#data_07_01 <- subset(data_07,data_07$fault_severity > 0,select=-severity_type)
+#data_07_00 <- subset(data_07,data_07$fault_severity==0,select=-severity_type)[500:1550,]
+#data_08 <- rbind(data_07_01,data_07_00)
+
+library(tree)
+tree1 <- tree(as.factor(fault_severity) ~.,data=data_08[,3:10])
+
+#tree1 <- tree(as.factor(fault_severity) ~ severity_type + volume.feature_203 + volume.feature_82 +  volume.feature_312 + data_07$volume.feature_232,data=data_08[,3:10])
+
+
+summary(tree1)
+plot(tree1);text(tree1)
+data_3 <- data_2[names(na_count[l])]
+test <- data_3[7301:7381,]
+
+plot(cv.tree(tree1))
+
+
+x<- names(test)
+d <- sapply(x,function(y) sub(" ","_",y))
+
+names(test) <- d
+for (i in 5:10) {
+test[is.na(test[,i]),i] <- median(data_07[,i],na.rm=TRUE)
+}
+
+
+pred1 <- predict(tree1,test,type="class",split=FALSE)
+
+table(test$fault_severity,pred1)
+
+
+PrunTree <- prune.tree(tree1,best=4)
+pred1 <- predict(PrunTree,test,type="class",split=FALSE)
+table(test$fault_severity,pred1)
+
+
+
+
+
+########################### Results submission
+
+
+setwd("D://P//Analytics//Kaggle//Telstra Recruiting Network Disruptions//WD")
+
+LF<- read.table('log_feature.csv', sep=',', header=T)
+RT<- read.table('resource_type.csv', sep=',', header=T)
+ET<- read.table('event_type.csv', sep=',', header=T)
+ST<- read.table('severity_type.csv', sep=',', header=T)
+
+
+data <- read.table('test.csv', sep=',', header=T)
+ST<- read.table('severity_type.csv', sep=',', header=T)
+data_1 <- merge(data,ST,by="id")
+
+samp_1 <- reshape(LF,timevar="log_feature",idvar="id",direction="wide")
+data_2 <- merge(data_1,samp_1,by="id")
+
+
+x<- names(data_2)
+
+
+d <- sapply(x,function(y) sub(" ","_",y))
+names(data_2) <- d
+
+pred1 <- predict(tree1,data_2,type="class",split=FALSE)
+
+
+nrow(pred_val)
+
+rep0 <- 0
+rep1 <- 0
+rep2 <- 0
+
+rep0[1:11171] <- 0
+rep1[1:11171] <- 0
+rep2[1:11171] <- 0
+
+cl <- pred1==0
+rep0[cl] <- 1
+cl <- pred1==1
+rep1[cl] <- 1
+cl <- pred1==2
+rep2[cl] <- 1
+pred_val <- cbind(data_2[1],rep0,rep1,rep2)
+
+names(pred_val) <- c('id','predict_0','predict_1','predict_2')
+
+write.csv(pred_val,file="Output#1.csv",row.names=FALSE) ## Write Results
+
+
+##############
+round(rnorm(10,1:4),0)
+
+##################################################################################################
+###model based on RandomForest
+##################################################################################################
+
+setwd("D://P//Analytics//Kaggle//Telstra Recruiting Network Disruptions//WD")
+data <- read.table('train.csv', sep=',', header=T)
+LF<- read.table('log_feature.csv', sep=',', header=T)
+RT<- read.table('resource_type.csv', sep=',', header=T)
+ET<- read.table('event_type.csv', sep=',', header=T)
+ST<- read.table('severity_type.csv', sep=',', header=T)
+
+
+data <- read.table('train.csv', sep=',', header=T)
+ST<- read.table('severity_type.csv', sep=',', header=T)
+data_1 <- merge(data,ST,by="id")
+
+samp_1 <- reshape(LF,timevar="log_feature",idvar="id",direction="wide")
+data_2 <- merge(data_1,samp_1,by="id")
+
+
+na_count <- sapply(data_2, function(y) sum(length(which(!is.na(y)))))
+
+l <- na_count[] > 800
+names(na_count[l])
+
+data_06 <- data_2[names(na_count[l])]
+
+
+
+
+x<- names(data_06)
+d <- sapply(x,function(y) sub(" ","_",y))
+
+names(data_06) <- d
+na_c <- sapply(subset(data_06[!is.na(data_06$volume.feature_312) | !is.na(data_06$volume.feature_232) | !is.na(data_06$volume.feature_203) | !is.na(data_06$volume.feature_82) | !is.na(data_06$volume.feature_313) | !is.na(data_06$volume.feature_233) ,]),function(x) sum((length(which(!is.na(x))))))
+
+data_07 <- data_06[!is.na(data_06$volume.feature_312) | !is.na(data_06$volume.feature_232) | !is.na(data_06$volume.feature_203) | !is.na(data_06$volume.feature_82) | !is.na(data_06$volume.feature_313) | !is.na(data_06$volume.feature_233) ,]
+
+#for (i in 5:10) {
+#data_07[is.na(data_07[,i]),i] <- median(data_07[,i],na.rm=TRUE)
+#}
+
+
+
+data_07_00 <- subset(data_07,data_07$fault_severity==0)
+data_07_01 <- subset(data_07,data_07$fault_severity==1)
+data_07_02 <- subset(data_07,data_07$fault_severity==2)
+
+for (i in 5:10) {
+data_07_00[is.na(data_07_00[,i]),i] <- mean(data_07_00[,i],na.rm=TRUE)
+data_07_01[is.na(data_07_01[,i]),i] <- mean(data_07_01[,i],na.rm=TRUE)
+data_07_02[is.na(data_07_02[,i]),i] <- mean(data_07_02[,i],na.rm=TRUE)
+
+data_07_00[is.nan(data_07_00[,i]),i] <- mean(data_07[,i],na.rm=TRUE)
+data_07_01[is.nan(data_07_01[,i]),i] <- mean(data_07[,i],na.rm=TRUE)
+data_07_02[is.nan(data_07_02[,i]),i] <- mean(data_07[,i],na.rm=TRUE)
+
+}
+
+data_07 <- rbind(data_07_00,data_07_01,data_07_02)
+
+
+na_c <- sapply(subset(data_07[!is.na(data_07$volume.feature_312) | !is.na(data_07$volume.feature_232) | !is.na(data_07$volume.feature_203) | !is.na(data_07$volume.feature_82) | !is.na(data_07$volume.feature_313) | !is.na(data_07$volume.feature_233) ,]),function(x) sum((length(which(!is.na(x))))))
+table(data_07$fault_severity)
+
+data_07_01 <- subset(data_07,data_07$fault_severity > 0)
+data_07_00 <- subset(data_07,data_07$fault_severity==0)[500:1550,]
+data_07_00 <- subset(data_07,data_07$fault_severity==0)
+data_08 <- rbind(data_07_01,data_07_00)
+
+
+##Model 
+library(randomForest)
+Tesltra.rf01 <- randomForest(as.factor(fault_severity) ~.,data=data_08[,3:10], importance=TRUE,proximity=TRUE)
+print(Tesltra.rf01)
+
+round(importance(Tesltra.rf01), 2)
+
+#clean up test dataset
+
+
+
+test.data <- read.table('test.csv', sep=',', header=T)
+ST<- read.table('severity_type.csv', sep=',', header=T)
+test.data_1 <- merge(test.data,ST,by="id")
+
+samp_1 <- reshape(LF,timevar="log_feature",idvar="id",direction="wide")
+test.data_2 <- merge(test.data_1,samp_1,by="id")
+
+
+
+test.data_3 <- test.data_2[names(na_count[l])[-3]]
+x<- names(test.data_3)
+d <- sapply(x,function(y) sub(" ","_",y))
+names(test.data_3) <- d
+
+
+
+split.1 <- split(test.data_3[,7],test.data_3$severity_type)
+#mean.split <- sapply(split.1,mean,na.rm=TRUE)
+median.split <- sapply(split.1,median,na.rm=TRUE)
+
+
+
+for (i in 4: ncol(test.data_3))
+{
+
+split.1 <- split(data_08[,i+1],data_08$severity_type)
+mean.split <- sapply(split.1,median)
+median.split <- sapply(split.1,median,na.rm=TRUE)
+
+for (j in 1:length(names(median.split)))
+{
+
+test.data_3[is.na(test.data_3[,i]) & test.data_3$severity_type == names(median.split[j]),i] <- median.split[names(median.split[j])]
+
+}
+}
+
+
+
+#Predict
+pred.rf_01 <- predict(Tesltra.rf01,test.data_3,type="response") 
+
+
+#write the results in required format
+#nrow(pred_val)
+
+rep0 <- 0
+rep1 <- 0
+rep2 <- 0
+
+rep0[1:11171] <- 0
+rep1[1:11171] <- 0
+rep2[1:11171] <- 0
+
+cl <- pred.rf_01==0
+rep0[cl] <- 1
+cl <- pred.rf_01==1
+rep1[cl] <- 1
+cl <- pred.rf_01==2
+rep2[cl] <- 1
+pred_val <- cbind(test.data_2[1],rep0,rep1,rep2)
+
+names(pred_val) <- c('id','predict_0','predict_1','predict_2')
+
+write.csv(pred_val,file="Output#2.csv",row.names=FALSE) ## Write Results
+
+###############Analyse RF data
+i <- 4
+ split.1 <- split(data_08[,i+1],data_08$severity_type)
+ median.split <- sapply(split.1,median,na.rm=TRUE)
+ length(names(median.split))
+ j=1
+ test.data_3[is.na(test.data_3[,i]) & test.data_3$severity_type == names(median.split[j]),i] <- median.split[names(median.split[j])]
+
+median(data_08[data_08$severity_type=="severity_type 2",i+1])
+
+plot(data_08[data_08$severity_type=="severity_type 2",i+1])
+
+
+#findinterval() - for converting continous variables into bins
+Intvl <- seq(0,56,by=2)
+tbl <- cbind(data_08[,i+1], findInterval(x, Intvl))
+
+tbl <- cbind(data_08[,i+1], findInterval(data_08[,i+1], Intvl))
+barplot(table(tbl[,2]))
+plot(data_2[,3:25])
+
+
+par(mfrow = c(2, 4))
+plot.new()
+for (k in 20:26) {
+plot((data_2[,3]) ~ data_2[,k])
+}
