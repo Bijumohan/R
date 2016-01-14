@@ -356,7 +356,14 @@ d <- sapply(x,function(y) sub(" ","_",y))
 names(data_06) <- d
 na_c <- sapply(subset(data_06[!is.na(data_06$volume.feature_312) | !is.na(data_06$volume.feature_232) | !is.na(data_06$volume.feature_203) | !is.na(data_06$volume.feature_82) | !is.na(data_06$volume.feature_313) | !is.na(data_06$volume.feature_233) ,]),function(x) sum((length(which(!is.na(x))))))
 
+
+na_c <- sapply(data_06,function(x) sum((length(which(!is.na(x))))))
 data_07 <- data_06[!is.na(data_06$volume.feature_312) | !is.na(data_06$volume.feature_232) | !is.na(data_06$volume.feature_203) | !is.na(data_06$volume.feature_82) | !is.na(data_06$volume.feature_313) | !is.na(data_06$volume.feature_233) ,]
+data_07 <- (data_06[!is.na(data_06),])
+data_07_1 <- data_07[!is.na(data_07$id),]
+
+nrow(data_07_1)
+
 
 #for (i in 5:10) {
 #data_07[is.na(data_07[,i]),i] <- median(data_07[,i],na.rm=TRUE)
@@ -468,7 +475,7 @@ names(pred_val) <- c('id','predict_0','predict_1','predict_2')
 
 write.csv(pred_val,file="Output#2.csv",row.names=FALSE) ## Write Results
 
-###############Analyse RF data
+#################Analyse RF data
 i <- 4
  split.1 <- split(data_08[,i+1],data_08$severity_type)
  median.split <- sapply(split.1,median,na.rm=TRUE)
@@ -482,6 +489,8 @@ plot(data_08[data_08$severity_type=="severity_type 2",i+1])
 
 
 #findinterval() - for converting continous variables into bins
+##factor(cut(x$V1, breaks=nclass.Sturges(x$V1)))
+
 Intvl <- seq(0,56,by=2)
 tbl <- cbind(data_08[,i+1], findInterval(x, Intvl))
 
@@ -495,3 +504,76 @@ plot.new()
 for (k in 20:26) {
 plot((data_2[,3]) ~ data_2[,k])
 }
+
+##analyse test data now
+
+na_count <- sapply(data_2, function(y) sum(length(which(!is.na(y)))))
+
+l <- na_count[] > 100
+names(na_count[l])
+
+data_06 <- data_2[names(na_count[l])]
+x<- names(data_06)
+d <- sapply(x,function(y) sub(" ","_",y))
+
+names(data_06) <- d
+na_c <- sapply(subset(data_06[!is.na(data_06$volume.feature_312) | !is.na(data_06$volume.feature_232) | !is.na(data_06$volume.feature_203) | !is.na(data_06$volume.feature_82) | !is.na(data_06$volume.feature_313) | !is.na(data_06$volume.feature_233) ,]),function(x) sum((length(which(!is.na(x))))))
+
+
+na_c <- sapply(data_06,function(x) sum((length(which(!is.na(x))))))
+#data_07 <- data_06[!is.na(data_06$volume.feature_312) | !is.na(data_06$volume.feature_232) | !is.na(data_06$volume.feature_203) | !is.na(data_06$volume.feature_82) | !is.na(data_06$volume.feature_313) | !is.na(data_06$volume.feature_233) ,]
+
+data_07 <- data_06[apply(!is.na(data_06[,5:ncol(data_06)]), 1, any), ]
+data_07_1 <- subset(data_07[!is.na(data_07[,1]),])
+
+nrow(data_07_1)
+
+#write.xlsx(x=data_07_1,file="Stats_train_data_07_1.xlsx",col.names=TRUE,row.names=FALSE)
+#file <- system.file("tests", "Stats_train_data_07_1.xlsx", package = "xlsx")
+
+#res <- read.xlsx("Stats_train_data_07_1.xlsx", 1)  # read first sheet
+
+write.csv(x=data_07_1,file="Stats_train_data_07_1.csv",col.names=TRUE,row.names=FALSE)
+
+data_07_1_f0 <- data_07_1[data_07_1$fault_severity==0]
+
+
+### data findings
+
+
+
+
+#install.packages("pastecs")
+
+library(pastecs)
+options(scipen=100)
+options(digits=2)
+Op_tmp <- stat.desc(data_07_1)
+write.csv(Op_tmp,file="Stats_features.csv",row.names=FALSE)
+
+#writing xlsx
+Sys.setenv(JAVA_HOME='C:\\Program Files\\Java\\jre1.8.0_66') # for 64-bit version
+library(rJava)
+library(xlsx) #load the package
+write.xlsx(x=t(Op_tmp),file="Stats_features.xlsx",col.names=TRUE,row.names=TRUE)
+
+
+## reading the csv created
+setwd("D://P//Analytics//Kaggle//Telstra Recruiting Network Disruptions//WD")
+
+data_08 <- read.table('Stats_features.csv', sep=',', header=T,row.names=1)
+
+
+
+par(mfrow = c(2, 4))
+plot.new()
+
+for (k in 4:7) {
+plot((data_07_1_f0[,3]) ~ data_07_1_f0[,k])
+}
+
+
+
+
+######################### remove the values with 3 SD from data set to remove outliers. marked as outliers if there is no visible patter (fault severity ~ variable distribution)).
+######################### Then identify the correlation with the variables.
